@@ -6,14 +6,10 @@
 // R4: List of numbers
 // R5: First element in the list (value)
 // R6: Result of the average
-// R7:
 // R9: Content of current element when subracting
 // R11: Content of the current element when calculating the sum
 
 _start:
-		LDR R1, =ADD_RESULT
-		LDR R2, =AVG_RESULT
-		LDR R8, =DIV_COUNTER
 		MOV R6, #0
 		LDR R3, =N // Counter
 		LDR R4, =NUMBERS  // R4 points to the first number 
@@ -43,12 +39,9 @@ SUB_LOOP:
 
 END: B END
 
-AVG_RESULT:	.word	4
-ADD_RESULT:	.word   0
 N:			.word	8			//number of entries in the list 
 NUMBERS:	.word	-4, 5, -3, 6	//the list data 
 			.word	1, -8, 2, 7
-DIV_COUNTER: .word 0
 
 .end
 
