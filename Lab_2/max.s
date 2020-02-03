@@ -25,7 +25,6 @@ _start:
 	LDR R5, [R4] // number of elements in the list
 	LDR R8, =RESULT // holds the result
 
-
 CALLER:	
 	BL MAX
 	STR R0, [R8]

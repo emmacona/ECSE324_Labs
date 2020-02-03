@@ -29,7 +29,7 @@ CALC_AVG:
 		LDR R4, =NUMBERS  // Reset R4 to first number in list
 
 SUB_LOOP: 
-		SUBS R3, R3, #1 // decrement counter by 1
+		SUBS R3, [R3], #1 // decrement counter by 1 using post index mode
 		BEQ END 		// if counter reaches 0 then we are done
 		LDR R9, [R4]	// else store content of current element in R9
 		SUB R9, R9, R6 // Subtract the average (R6) to the current element
