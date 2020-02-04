@@ -13,7 +13,6 @@
 // R5 : Fake stack pointer
 
 _start:
-	LDR R0, RETURN_VAL // Return value for functions
 	LDR R5, FAKE_SP
 	LDR R2, N
 	LDR R3, =NUMBERS
@@ -22,7 +21,7 @@ _start:
 
 PUSH: // Re-write PUSH { R0 }
 	LDR R0, [R3] // Load first element
-	STR R0, [R5], #-4 // push R0 into TOS
+	STR R0, [R5, #-4]! // push R0 into TOS
 	ADD R3, R3, #4 // point to next element in the list
 	SUBS R2, R2, #1 // decrement counter
 	BEQ POP // if all elements pushed, go to pop
@@ -30,11 +29,9 @@ PUSH: // Re-write PUSH { R0 }
 
 
 POP: // Re-write POP { R0 - R2 }
-	LDR R0, [R5] // pop first element into R0
-	ADD R5, R5, #4 // point to next element
-	LDR R1, [R5] // pop second element into R1
-	ADD R5, R5, #4 // point to next element
-	LDR R2, [R5] // pop third element into R2
+	LDR R0, [R5], #4 // pop first element into R0 and point to next element
+	LDR R1, [R5], #4 // pop second element into R1
+	LDR R2, [R5], #4 // pop third element into R2
 
 END: 		B END	// infinite loop
 
