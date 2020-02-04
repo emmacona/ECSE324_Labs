@@ -33,7 +33,7 @@ CALLER:
 MAX:
 	SUBS R5, R5, #1		// decrement the loop counter 
 	BEQ DONE			// end loop if counter has reached 0
-	PUSH {R1-R3} // push R1 to R3
+	PUSH {R1-R3} 		// push R1 to R3
 	LDR R9, [SP], #4 // pop TOS
 	CMP R0, R9 // compare R0 to the next element (R9)
 	BGE MAX // If R0 > R9 move on to next
