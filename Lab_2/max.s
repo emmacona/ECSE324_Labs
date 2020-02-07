@@ -27,7 +27,7 @@ _start:
 
 CALLER:	
 	BL MAX
-	STR R0, [R8]
+	STR R0, [R8] // store the max (R0) into the address of R8
 	B END
 
 MAX:
