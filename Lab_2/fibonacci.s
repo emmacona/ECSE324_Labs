@@ -5,28 +5,52 @@
 
 
 // Registers - Tracker:
-// R0: n
-// R1: n - 1
-// R2:
-// R3: Holds the current value of n
+// R0: Result
+// R1: n to be computed --> fib(n)
+// R2: n - 1
+// R3: n - 2
 
 _start:
-	LDR R0, =N // points to value of n
+	LDR R1, N // value of n	
+	PUSH {R1, LR} // store n and lr 
+	BL FIB
+	STR R1, RESULT
+	POP {R1, R2, R3, LR} // restore original register values
+	B END
+	
 
 FIB: 
-	CMP R0, #2			// compare R0 (n) to 2
-	MOVLT R0, #1		// if n < 2, then R0 = 1
-	MOVLT PC, LR		// and go to LR (aka "MUL R0, R3, R0")
+	PUSH {LR}	
 
-	STDB SP!, {LR} 		// push LR
+	CMP R1, #2			// compare R1 (n) to 2
+	BLT LESS_2 		// if n < 2 branch to last step
 	
-	MOV R3, R0 			// Move n into R3
-	SUB R0, R0, #1 		// R0 = n - 1
-	SUB R1, R0, #1 		// R1 = n - 2
-	BL FIB 				// call fib (n-1)
+	SUB R2, R1, #1 	// else store n - 1 into R2
+	SUB R3, R1, #2 	// store n-2 into R3
+	PUSH {R3} 		// push n-2 on stack for later
+	MOV R1, R2
+	BL FIB 			// call fib (n - 1)
 
-	ADD R0, R3, R0 		// R0 <- fib(n-2) + fib(n-1)
-	LDMIA SP!, {PC} 	// pop PC
+	POP {R3} // n-1
+	PUSH {R1} // push f(n-1)
+	MOV R1, R3 // Change R1 to be n-2
+	BL FIB //cal fib(n-2)
+
+	MOV R3, R1 // R3 holds n-2
+	POP {R2} //pop fib(n-1)
+	
+	ADD R1, R2, R3
+	POP {LR}
+	BX LR
 
 
-N: .word 5 // value we want to compute (fact(n))
+LESS_2: 
+	MOV R1, #1		// if n < 2, then R0 = 1
+	POP {LR}
+	BX LR 			//back to start
+
+END: B END //infinite loop
+
+
+RESULT: .word 0 // fib result
+N: .word 4 // value we want to compute (fact(n))
