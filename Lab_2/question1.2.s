@@ -26,14 +26,15 @@ _start:
 	LDR R8, =RESULT // holds the result
 
 CALLER:	
+	PUSH {R1-R3} 		// push R1 to R3
 	BL MAX
-	STR R0, [R8] // store the max (R0) into the address of R8
+	MOV R8, R0 // Move the max (R0) into the address of R8
 	B END
 
 MAX:
 	SUBS R5, R5, #1		// decrement the loop counter 
 	BEQ DONE			// end loop if counter has reached 0
-	PUSH {R1-R3} 		// push R1 to R3
+
 	LDR R9, [SP], #4 // pop TOS
 	CMP R0, R9 // compare R0 to the next element (R9)
 	BGE MAX // If R0 > R9 move on to next
