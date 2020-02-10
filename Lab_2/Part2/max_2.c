@@ -10,7 +10,7 @@ int main(){
 		a = list[i];
 		b = list[i+1];
 		if(MAX_2(a,b) > c){
-			c = MAX_2(a,b)
+			c = MAX_2(a,b);
 		}
 	}
 
