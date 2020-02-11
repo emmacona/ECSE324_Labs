@@ -14,7 +14,7 @@ _start:
 	LDR R1, N // value of n	
 	PUSH {R1, LR} // store n and lr 
 	BL FIB
-	STR R1, RESULT
+	STR R0, RESULT
 	POP {R1, R2, R3, LR} // restore original register values
 	B END
 	
@@ -39,13 +39,13 @@ FIB:
 	MOV R3, R1 // R3 holds n-2
 	POP {R2} //pop fib(n-1)
 	
-	ADD R1, R2, R3
+	ADD R0, R2, R3 // resutl stored in R0, return value
 	POP {LR}
 	BX LR
 
 
 LESS_2: 
-	MOV R1, #1		// if n < 2, then R0 = 1
+	MOV R1, #1		// if n < 2, then R1 = 1
 	POP {LR}
 	BX LR 			//back to start
 
