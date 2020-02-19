@@ -1,5 +1,5 @@
-#ifndef _SLIDER_SWITCHES
-#define _SLIDER_SWITCHES
+#ifndef _LEDs
+#define _LEDs
 
 	extern int read_LEDs_ASM();
 	extern int write_LEDs_ASM(int x);
