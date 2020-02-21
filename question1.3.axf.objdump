@@ -71,7 +71,7 @@ FIB:
 
 
 LESS_2: 
-	MOV R1, #1		// if n < 2, then R0 = 1
+	MOV R1, #1		// if n < 2, then R1 = 1
   5c:	e3a01001 	mov	r1, #1
 	POP {LR}
   60:	e49de004 	pop	{lr}		; (ldr lr, [sp], #4)
@@ -87,4 +87,4 @@ END: B END //infinite loop
   6c:	00000000 	.word	0x00000000
 
 00000070 <N>:
-  70:	00000004 	.word	0x00000004
+  70:	0000000a 	.word	0x0000000a

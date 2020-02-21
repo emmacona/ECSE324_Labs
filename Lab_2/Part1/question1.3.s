@@ -45,7 +45,7 @@ FIB:
 
 
 LESS_2: 
-	MOV R1, #1		// if n < 2, then R0 = 1
+	MOV R1, #1		// if n < 2, then R1 = 1
 	POP {LR}
 	BX LR 			//back to start
 
@@ -53,4 +53,4 @@ END: B END //infinite loop
 
 
 RESULT: .word 0 // fib result
-N: .word 4 // value we want to compute (fact(n))
+N: .word 10 // value we want to compute (fact(n))

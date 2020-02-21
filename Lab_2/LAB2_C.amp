@@ -10,10 +10,11 @@
     <program>
         <type>C Program</type>
         <source_files>
-            <source_file filepath="true">getting_started.c</source_file>
+            <source_file filepath="true">Part2/max_2.c</source_file>
+            <source_file filepath="true">Part2/subroutine.s</source_file>
         </source_files>
         <options>
-            <compiler_flags>-g -O1</compiler_flags>
+            <compiler_flags>-g -O1 -std=gnu99</compiler_flags>
             <emulate_unimpl_instructions>false</emulate_unimpl_instructions>
             <use_small_c_library>false</use_small_c_library>
         </options>
