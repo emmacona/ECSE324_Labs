@@ -1,4 +1,5 @@
 #include <stdio.h>
+
 #include "./drivers/inc/LEDs.h"
 #include "./drivers/inc/slider_switches.h"
 #include "./drivers/inc/HEX_displays.h"
@@ -12,8 +13,8 @@ int main() {
 	//Basic Input/output****************************
 /*
 	while(1){
-		write_LEDs_ASM(read_slider_switches_ASM());
-		if(read_slider_switches_ASM() & 0x200){
+		write_LEDs_ASM(read_slider_switches_ASM()); //input is in R0
+		if(read_slider_switches_ASM() & 0x200){ //If the read value from data register of switches is the 10th switch, clear 
 			HEX_clear_ASM(HEX0); //should clear all
 			HEX_clear_ASM(HEX1);
 			HEX_clear_ASM(HEX2);
@@ -24,10 +25,10 @@ int main() {
 		else{
 			HEX_flood_ASM(HEX4);
 			HEX_flood_ASM(HEX5);
-			char hex_val = (0xF & read_slider_switches_ASM());
-			int pushbutton = (0xF & read_PB_data_ASM());
-			hex_val = hex_val + 48; //for ascii usage
-			HEX_write_ASM(pushbutton, hex_val);//write the value on display
+			char hexValue = (0b1111 & read_slider_switches_ASM()); //bit arithemetic to determine first hexValue of sliderswitches enabled   `
+			int pb = (0b1111 & read_PB_data_ASM()); //bit artimetic to determine which pb has been enabled 
+			hexValue = hexValue + 0x30; //for ascii usage
+			HEX_write_ASM(pb, hexValue);//write the value on display
 		}
 	}
 */
@@ -37,12 +38,15 @@ int main() {
 	
 	int count0 = 0, count1 = 0, count2 = 0, count3 = 0;
 	HPS_TIM_config_t hps_tim;
+
 	hps_tim.tim = TIM0|TIM1|TIM2|TIM3;
 	hps_tim.timeout = 1000000;
 	hps_tim.LD_en = 1;
 	hps_tim.INT_en = 1;
 	hps_tim.enable = 1;
+
 	HPS_TIM_config_ASM(&hps_tim);
+
 	while (1) {
 		write_LEDs_ASM(read_slider_switches_ASM());
 		if (HPS_TIM_read_INT_ASM(TIM0)) {
@@ -69,6 +73,7 @@ int main() {
 				count3 = 0;
 			HEX_write_ASM(HEX3, (count3+48));
 		}
+
 	}
 	*/
 /*
@@ -80,7 +85,9 @@ int main() {
 	hps_tim.LD_en = 1;
 	hps_tim.INT_en = 1;
 	hps_tim.enable = 1;
+
 	HPS_TIM_config_ASM(&hps_tim); //Config timer 1
+
 	//This timer is for the pushbutton polling
 	HPS_TIM_config_t hps_tim_pb;
 	hps_tim_pb.tim = TIM1;
@@ -88,17 +95,20 @@ int main() {
 	hps_tim_pb.LD_en = 1;
 	hps_tim_pb.INT_en = 1;
 	hps_tim_pb.enable = 1;
+
 	HPS_TIM_config_ASM(&hps_tim_pb); //config timer 2
 	//declare our init
 	int micros = 0;
 	int seconds = 0;
 	int minutes = 0;
 	int timerstart = 0;
+
 	while (1) {
 		//when timer for the timer seconds flags
 		if (HPS_TIM_read_INT_ASM(TIM0) && timerstart) {
 			HPS_TIM_clear_INT_ASM(TIM0);
 			micros += 10; //Timer is for 10 milliseconds
+
 			//When microseconds reach 1000, we increment seconds, then microsseocnds reset
 			if (micros >= 1000) {
 				micros -= 1000;
@@ -113,6 +123,7 @@ int main() {
 					}
 				}
 			}
+
 			//Display every value and convert the count to ascii values
 			HEX_write_ASM(HEX0, ((micros % 100) / 10) + 48);
 			HEX_write_ASM(HEX1, (micros / 100) + 48);
@@ -223,3 +234,5 @@ int main() {
 	
 	return 0;
 }
+
+

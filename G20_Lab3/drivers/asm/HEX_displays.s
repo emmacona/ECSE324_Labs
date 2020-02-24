@@ -1,17 +1,17 @@
-.text
-		.equ HEX_DISP_1, 0xFF200020
-		.equ HEX_DISP_2, 0xFF200030	
-		.global HEX_clear_ASM
-		.global HEX_flood_ASM
-		.global HEX_write_ASM
+		.text
+		.equ Hex_3_To_0, 0xFF200020 //data register adress for HEX 3-0
+		.equ Hex_5_To_4, 0xFF200030	//data register adress for HEX 3-0
+		.global HEX_clear_ASM //external 
+		.global HEX_flood_ASM //external
+		.global HEX_write_ASM //external
 
-HEX_clear_ASM:					//we know that R0 holds a hot-one encoding of which HEX display
-		PUSH {R1-R8,LR}
-		LDR R1, =HEX_DISP_1		//put location of the HEX3-0 register into R0
+HEX_clear_ASM:					//Given input, RO holds one-hot encoded corresponding to HEXdisplay 
+		PUSH {R1-R8,LR}			
+		LDR R1, =Hex_3_To_0		//put location of the HEX3-0 register into R0
 		MOV R3, #0				//this is our counter for which hex counts
 		
 HEX_clear_LOOP:
-		CMP R3, #6				//if we looped all of them
+		CMP R3, #6				//compares counter to see if all have been looped through
 		BEQ HEX_clear_CORRECT	//branch to done if error
 
 		AND R4, R0, #1			//AND 0x0000 0000 is equal to 0x0000 00001, shift if not equal
@@ -25,7 +25,7 @@ HEX_clear_LOOP:
 HEX_clear_CORRECT:
 		CMP R3, #3				//if counter is bigger than 3, we are at HEX 4 or 5
 		SUBGT R3, R3, #4		//we set our counter back to either 0 or 1 since we are updating the bits
-		LDRGT R1, =HEX_DISP_2	//we set it to the the other disp HEX
+		LDRGT R1, =Hex_5_To_4	//we set it to the the other disp HEX
 		LDR R2, [R1]
 		MOV R5, #0xFFFFFF00		//give it an initial value
 		B HEX_clear_LOOP2		//to push stuff back
@@ -46,7 +46,7 @@ HEX_clear_DONE:
 
 HEX_flood_ASM:					//we know that R0 holds a hot-one encoding of which HEX display
 		PUSH {R1-R8,R14}
-		LDR R1, =HEX_DISP_1		//put location of the HEX3-0 register into R0
+		LDR R1, =Hex_3_To_0		//put location of the HEX3-0 register into R0
 		MOV R3, #0				//this is our counter for which hex counts
 		
 HEX_flood_LOOP:
@@ -64,7 +64,7 @@ HEX_flood_LOOP:
 HEX_flood_CORRECT:
 		CMP R3, #3				//if counter is bigger than 3, we are at HEX 4 or 5
 		SUBGT R3, R3, #4		//we set our counter back to either 0 or 1 since we are updating the bits
-		LDRGT R1, =HEX_DISP_2	//we set it to the the other disp HEX
+		LDRGT R1, =Hex_5_To_4	//we set it to the the other disp HEX
 		LDR R2, [R1]
 		MOV R5, #0x000000FF		//give it an initial value
 		B HEX_flood_LOOP2		//to push stuff back
@@ -82,14 +82,6 @@ HEX_flood_DONE:
 		POP {R1-R8,LR}
 		BX LR
 
-//HEX_flood_ASM:					//R0 contains the hex to flood
-//		LDR R1, =HEX_DISP_1
-//		MOV R2, #0xFFFFFFFF		//set all as on
-//		STR R2, [R1]
-//		LDR R1, =HEX_DISP_2
-//		STR R2, [R1]
-//		BX LR
-
 HEX_write_ASM:					//we know that R0 holds a hot-one encoding of which HEX display, R1 holds the character value
 		MOV R10, R0
 		MOV R9, R1
@@ -99,7 +91,7 @@ HEX_write_ASM:					//we know that R0 holds a hot-one encoding of which HEX displ
 		MOV R0, R10
 		
 		PUSH {R1-R8,LR}
-		LDR R1, =HEX_DISP_1		//put location of the HEX3-0 register into R0
+		LDR R1, =Hex_3_To_0		//put location of the HEX3-0 register into R0
 		MOV R3, #0				//this is our counter for which hex counts
 		B HEX_write_0
 
@@ -235,7 +227,7 @@ HEX_write_LOOP:
 HEX_write_CORRECT:
 		CMP R3, #3				//if counter is bigger than 3, we are at HEX 4 or 5
 		SUBGT R3, R3, #4		//we set our counter back to either 0 or 1 since we are updating the bits
-		LDRGT R1, =HEX_DISP_2	//we set it to the the other disp HEX
+		LDRGT R1, =Hex_5_To_4	//we set it to the the other disp HEX
 		LDR R2, [R1]
 		MOV R5, R8				//give R8 an initial value, which is from our switch case
 		B HEX_write_LOOP2		//to push stuff back
@@ -251,7 +243,5 @@ HEX_write_DONE:
 		ORR R2, R2, R5			//we and the two values
 		STR R2, [R1]			//we store back on the display
 		POP {R1-R8,LR}
-		BX LR	
-.end
-
-
+		BX LR
+		.end

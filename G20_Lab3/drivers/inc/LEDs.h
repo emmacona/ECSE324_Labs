@@ -1,6 +1,7 @@
-#ifndef LEDs
-#define LEDs
+#ifndef __LEDs
+#define __LEDs
+
 	extern int read_LEDs_ASM();
-	extern int write_LEDs_ASM(int x);
+	extern void write_LEDs_ASM(int a);
 
 #endif
