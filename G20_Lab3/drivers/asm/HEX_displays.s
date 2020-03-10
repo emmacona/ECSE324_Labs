@@ -1,247 +1,177 @@
-		.text
-		.equ Hex_3_To_0, 0xFF200020 //data register adress for HEX 3-0
-		.equ Hex_5_To_4, 0xFF200030	//data register adress for HEX 3-0
-		.global HEX_clear_ASM //external 
-		.global HEX_flood_ASM //external
-		.global HEX_write_ASM //external
+.text
+.equ HEX3_TO_0, 0xFF200020
+.equ HEX5_TO_4, 0xFF200030
 
-HEX_clear_ASM:					//Given input, RO holds one-hot encoded corresponding to HEXdisplay 
-		PUSH {R1-R8,LR}			
-		LDR R1, =Hex_3_To_0		//put location of the HEX3-0 register into R0
-		MOV R3, #0				//this is our counter for which hex counts
-		
-HEX_clear_LOOP:
-		CMP R3, #6				//compares counter to see if all have been looped through
-		BEQ HEX_clear_CORRECT	//branch to done if error
+.equ SHOW_0, 0x3F
+.equ SHOW_1, 0x06
+.equ SHOW_2, 0x5B
+.equ SHOW_3, 0x4F
+.equ SHOW_4, 0x66
+.equ SHOW_5, 0x6D
+.equ SHOW_6, 0x7D
+.equ SHOW_7, 0x07
+.equ SHOW_8, 0x7F
+.equ SHOW_9, 0x67
+.equ SHOW_A, 0x77
+.equ SHOW_B, 0x7C
+.equ SHOW_C, 0x39
+.equ SHOW_D, 0x5E
+.equ SHOW_E, 0x79
+.equ SHOW_F, 0x71
+.equ SHOW_EMPTY, 0x00
+.equ SHOW_FULL, 0x7F
 
-		AND R4, R0, #1			//AND 0x0000 0000 is equal to 0x0000 00001, shift if not equal
-		CMP R4, #1				//if equal, this is the desired HEX
-		BEQ HEX_clear_CORRECT	//branch to the part that does something
-							
-		ASR R0, R0, #1			//if not equal, then shift by 1 bit
-		ADD R3, R3, #1			//also increment our counter which will tell us which one is our HEX
-		B HEX_clear_LOOP		//loop again if not correct
-		
-HEX_clear_CORRECT:
-		CMP R3, #3				//if counter is bigger than 3, we are at HEX 4 or 5
-		SUBGT R3, R3, #4		//we set our counter back to either 0 or 1 since we are updating the bits
-		LDRGT R1, =Hex_5_To_4	//we set it to the the other disp HEX
-		LDR R2, [R1]
-		MOV R5, #0xFFFFFF00		//give it an initial value
-		B HEX_clear_LOOP2		//to push stuff back
+.global HEX_clear_ASM
+.global HEX_flood_ASM
+.global HEX_write_ASM
 
-HEX_clear_LOOP2:
-		CMP R3, #0				//if not equal to 0, we update it
-		BEQ HEX_clear_DONE		//branch to done		
-		LSL R5, R5, #8			//shift left by 8 bits
-		ADD R5, R5, #0xFF		//keep our empty space constant
-		SUB R3, R3, #1			//decrement our counter
-		B HEX_clear_LOOP2
 
-HEX_clear_DONE:
-		AND R2, R2, R5			//we and the two values
-		STR R2, [R1]			//we store back on the display
-		POP {R1-R8, R14}
-		BX LR
+HEX_clear_ASM: 
+	LDR R1, =HEX3_TO_0
+	MOV R2, #0
+	LDR R3, =HEX5_TO_4
+	MOV R4, #0
+	TST R0, #8
 
-HEX_flood_ASM:					//we know that R0 holds a hot-one encoding of which HEX display
-		PUSH {R1-R8,R14}
-		LDR R1, =Hex_3_To_0		//put location of the HEX3-0 register into R0
-		MOV R3, #0				//this is our counter for which hex counts
-		
-HEX_flood_LOOP:
-		CMP R3, #6				//if we looped all of them
-		BEQ HEX_flood_CORRECT	//branch to done if error
+	ADDEQ R2, R2, #SHOW_FULL
+	LSL R2, R2, #8
+	TST R0, #4
+	ADDEQ R2, R2, #SHOW_FULL
+	LSL R2, R2, #8
+	TST R0, #2
+	ADDEQ R2, R2, #SHOW_FULL
+	LSL R2, R2, #8
+    TST R0, #1
+	ADDEQ R2, R2, #SHOW_FULL
+	STR R2, [R1]
 
-		AND R4, R0, #1			//AND 0x0000 0000 is equal to 0x0000 00001, shift if not equal
-		CMP R4, #1				//if equal, this is the desired HEX
-		BEQ HEX_flood_CORRECT	//branch to the part that does something
-							
-		ASR R0, R0, #1			//if not equal, then shift by 1 bit
-		ADD R3, R3, #1			//also increment our counter which will tell us which one is our HEX
-		B HEX_flood_LOOP		//loop again if not correct
-		
-HEX_flood_CORRECT:
-		CMP R3, #3				//if counter is bigger than 3, we are at HEX 4 or 5
-		SUBGT R3, R3, #4		//we set our counter back to either 0 or 1 since we are updating the bits
-		LDRGT R1, =Hex_5_To_4	//we set it to the the other disp HEX
-		LDR R2, [R1]
-		MOV R5, #0x000000FF		//give it an initial value
-		B HEX_flood_LOOP2		//to push stuff back
+    TST R0, #32
+	ADDEQ R4, #SHOW_FULL
+	LSL R4, R4, #8
+ 	TST R0, #16
+	ADDEQ R4, #SHOW_FULL
+	STR R4, [R3]
+	BX LR
+HEX_flood_ASM:	
+	LDR R1, =HEX3_TO_0
+	LDR R2, [R1]
+	LDR R6, =HEX5_TO_4
+	LDR R7, [R6]
+	MOV R4, #SHOW_FULL
 
-HEX_flood_LOOP2:
-		CMP R3, #0				//if not equal to 0, we update it
-		BEQ HEX_flood_DONE		//branch to done		
-		LSL R5, R5, #8			//shift left by 8 bits
-		SUB R3, R3, #1			//decrement our counter
-		B HEX_flood_LOOP2
+	
+	TST R0, #8
+	BICNE R3, R3, #0b01111111000000000000000000000000
+	MOVNE R5, R4
+	LSL R5, #24
+	ORRNE R2, R2, R5
 
-HEX_flood_DONE:
-		ORR R2, R2, R5			//we and the two values
-		STR R2, [R1]			//we store back on the display
-		POP {R1-R8,LR}
-		BX LR
+	TST R0, #4
+	BICNE R3, R3, #0b00000000011111110000000000000000
+	MOVNE R5, R4
+	LSL R5, #16
+	ORRNE R2, R2, R5
 
-HEX_write_ASM:					//we know that R0 holds a hot-one encoding of which HEX display, R1 holds the character value
-		MOV R10, R0
-		MOV R9, R1
-		PUSH {R1-R8,LR}
-		BL HEX_clear_ASM		//we have to clear the display we have before doing anything on it
-		POP {R1-R8,R14}
-		MOV R0, R10
-		
-		PUSH {R1-R8,LR}
-		LDR R1, =Hex_3_To_0		//put location of the HEX3-0 register into R0
-		MOV R3, #0				//this is our counter for which hex counts
-		B HEX_write_0
+	TST R0, #2
+	BICNE R3, R3, #0b00000000000000000111111100000000
+	MOVNE R5, R4
+	LSL R5, #8
+	ORRNE R2, R2, R5
 
-HEX_write_0:
-		CMP R9, #48
-		BNE HEX_write_1
-		MOV R5, #0x3F
-		MOV R8, R5
-		B HEX_write_LOOP
 
-HEX_write_1:	
-		CMP R9, #49
-		BNE HEX_write_2
-		MOV R5, #0x06
-		MOV R8, R5
-		B HEX_write_LOOP
+    TST R0, #1
+	BICNE R3, R3, #0b00000000000000000000000001111111
+	MOVNE R5, R4
+	LSL R5, #0
+	ORRNE R2, R2, R5
 
-HEX_write_2:	
-		CMP R9, #50
-		BNE HEX_write_3
-		MOV R5, #0x5B
-		MOV R8, R5
-		B HEX_write_LOOP
+	TST R0, #32
+	BICNE R3, R3, #0b00000000000000001111111000000000
+	MOVNE R5, R4
+	LSL R5, #8
+	ORRNE R7, R7, R5
 
-HEX_write_3:	
-		CMP R9, #51
-		BNE HEX_write_4
-		MOV R5, #0x4F
-		MOV R8, R5
-		B HEX_write_LOOP
+    TST R0, #16
+	BICNE R3, R3, #0b00000000000000000000000001111111
+	MOVNE R5, R4
+	LSL R5, #0
+	ORRNE R7, R7, R5
 
-HEX_write_4:	
-		CMP R9, #52
-		BNE HEX_write_5
-		MOV R5, #0x66
-		MOV R8, R5
-		B HEX_write_LOOP
+	STR R2, [R1]
+	STR R7, [R6]
 
-HEX_write_5:	
-		CMP R9, #53
-		BNE HEX_write_6
-		MOV R5, #0x6D
-		MOV R8, R5
-		B HEX_write_LOOP
+	BX LR
+HEX_write_ASM:
+	LDR R2, =HEX3_TO_0 // address to hex3 to hex0
+	LDR R3, [R2]
+	
+	CMP R1, #0b0000
+	MOVEQ R4, #SHOW_0
+	CMP R1, #0b0001
+	MOVEQ R4, #SHOW_1
+	CMP R1, #0b0010
+	MOVEQ R4, #SHOW_2
+	CMP R1, #0b0011
+	MOVEQ R4, #SHOW_3
+	CMP R1, #0b0100
+	MOVEQ R4, #SHOW_4
+	CMP R1, #0b0101
+	MOVEQ R4, #SHOW_5
+	CMP R1, #0b0110
+	MOVEQ R4, #SHOW_6
+	CMP R1, #0b0111
+	MOVEQ R4, #SHOW_7
+	CMP R1, #0b1000
+	MOVEQ R4, #SHOW_8
+	CMP R1, #0b1001
+	MOVEQ R4, #SHOW_9
+	CMP R1, #0b1010
+	MOVEQ R4, #SHOW_A
+	CMP R1, #0b1011
+	MOVEQ R4, #SHOW_B
+	CMP R1, #0b1100
+	MOVEQ R4, #SHOW_C
+	CMP R1, #0b1101
+	MOVEQ R4, #SHOW_D
+	CMP R1, #0b1110
+	MOVEQ R4, #SHOW_E
+	CMP R1, #0b1111
+	MOVEQ R4, #SHOW_F
 
-HEX_write_6:	
-		CMP R9, #54
-		BNE HEX_write_7
-		MOV R5, #0x7D
-		MOV R8, R5
-		B HEX_write_LOOP
 
-HEX_write_7:	
-		CMP R9, #55
-		BNE HEX_write_8
-		MOV R5, #0x07
-		MOV R8, R5
-		B HEX_write_LOOP
+	TST R0, #8
+	BICNE R3, R3,#0b01111111000000000000000000000000
+	MOVNE R5, R4
+	LSL R5, #24
+	ORRNE R3, R3, R5
 
-HEX_write_8:	
-		CMP R9, #56
-		BNE HEX_write_9
-		MOV R5, #0x7F
-		MOV R8, R5
-		B HEX_write_LOOP
 
-HEX_write_9:	
-		CMP R9, #57
-		BNE HEX_write_A
-		MOV R5, #0x6F
-		MOV R8, R5
-		B HEX_write_LOOP
+	TST R0, #4
+	BICNE R3, R3, #0b00000000011111110000000000000000
+	MOVNE R5, R4
+	LSL R5, #16
+	ORRNE R3, R3, R5
 
-HEX_write_A:	
-		CMP R9, #58
-		BNE HEX_write_B
-		MOV R5, #0x77
-		MOV R8, R5
-		B HEX_write_LOOP
 
-HEX_write_B:	
-		CMP R9, #59
-		BNE HEX_write_C
-		MOV R5, #0x7C
-		MOV R8, R5
-		B HEX_write_LOOP
 
-HEX_write_C:	
-		CMP R9, #60
-		BNE HEX_write_D
-		MOV R5, #0x39
-		MOV R8, R5
-		B HEX_write_LOOP
+	TST R0, #2
+	BICNE R3, R3, #0b00000000000000000111111100000000
+	MOVNE R5, R4
+	LSL R5, #8
+	ORRNE R3, R3, R5
 
-HEX_write_D:	
-		CMP R9, #61
-		BNE HEX_write_E
-		MOV R5, #0x5E
-		MOV R8, R5
-		B HEX_write_LOOP
 
-HEX_write_E:	
-		CMP R9, #62
-		BNE HEX_write_F
-		MOV R5, #0x79
-		MOV R8, R5
-		B HEX_write_LOOP
+    TST R0, #1
+	BICNE R3, R3, #0b00000000000000000000000001111111
+	MOVNE R5, R4
+	LSL R5, #0
+	ORRNE R3, R3, R5
+	STR R3, [R2]
 
-HEX_write_F:	
-		CMP R9, #63
-		BNE HEX_write_OFF
-		MOV R5, #0x71
-		MOV R8, R5
-		B HEX_write_LOOP
+	BX LR
+	
+	
+	
+				
 
-HEX_write_OFF:
-		MOV R5, #0
-		MOV R8, R5
-		B HEX_write_LOOP
-		
-HEX_write_LOOP:
-		CMP R3, #6				//if we looped all of them
-		BEQ HEX_write_CORRECT	//branch to done if error
-
-		AND R4, R0, #1			//AND 0x0000 0000 is equal to 0x0000 00001, shift if not equal
-		CMP R4, #1				//if equal, this is the desired HEX
-		BEQ HEX_write_CORRECT	//branch to the part that does something
-							
-		ASR R0, R0, #1			//if not equal, then shift by 1 bit
-		ADD R3, R3, #1			//also increment our counter which will tell us which one is our HEX
-		B HEX_write_LOOP		//loop again if not correct
-		
-HEX_write_CORRECT:
-		CMP R3, #3				//if counter is bigger than 3, we are at HEX 4 or 5
-		SUBGT R3, R3, #4		//we set our counter back to either 0 or 1 since we are updating the bits
-		LDRGT R1, =Hex_5_To_4	//we set it to the the other disp HEX
-		LDR R2, [R1]
-		MOV R5, R8				//give R8 an initial value, which is from our switch case
-		B HEX_write_LOOP2		//to push stuff back
-
-HEX_write_LOOP2:
-		CMP R3, #0				//if not equal to 0, we update it
-		BEQ HEX_write_DONE		//branch to done		
-		LSL R5, R5, #8			//shift left by 8 bits, 
-		SUB R3, R3, #1			//decrement our counter
-		B HEX_write_LOOP2
-
-HEX_write_DONE:
-		ORR R2, R2, R5			//we and the two values
-		STR R2, [R1]			//we store back on the display
-		POP {R1-R8,LR}
-		BX LR
-		.end
+.end

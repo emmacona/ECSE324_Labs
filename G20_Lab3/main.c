@@ -4,235 +4,236 @@
 #include "./drivers/inc/slider_switches.h"
 #include "./drivers/inc/HEX_displays.h"
 #include "./drivers/inc/pushbuttons.h"
-#include "./drivers/inc/HPS_TIM.h"
-#include "./drivers/inc/ISRs.h"
-#include "./drivers/inc/address_map_arm.h"
+
 #include "./drivers/inc/int_setup.h"
+#include "./drivers/inc/address_map_arm.h"
+#include "./drivers/inc/ISRs.h"
 
-int main() {
-	//Basic Input/output****************************
-/*
-	while(1){
-		write_LEDs_ASM(read_slider_switches_ASM()); //input is in R0
-		if(read_slider_switches_ASM() & 0x200){ //If the read value from data register of switches is the 10th switch, clear 
-			HEX_clear_ASM(HEX0); //should clear all
-			HEX_clear_ASM(HEX1);
-			HEX_clear_ASM(HEX2);
-			HEX_clear_ASM(HEX3);
-			HEX_clear_ASM(HEX4);
-			HEX_clear_ASM(HEX5);
-		}
-		else{
-			HEX_flood_ASM(HEX4);
-			HEX_flood_ASM(HEX5);
-			char hexValue = (0b1111 & read_slider_switches_ASM()); //bit arithemetic to determine first hexValue of sliderswitches enabled   `
-			int pb = (0b1111 & read_PB_data_ASM()); //bit artimetic to determine which pb has been enabled 
-			hexValue = hexValue + 0x30; //for ascii usage
-			HEX_write_ASM(pb, hexValue);//write the value on display
-		}
+#include "./drivers/inc/HPS_TIM.h"
+
+
+
+
+int main(){
+
+
+// PART 1
+/*while (1){
+	write_LEDs_ASM(read_slider_switches_ASM());
 	}
+	return 0;
 */
+// PART 2
 
-/*
-	//Timer Example part of the lab***************************
+/*while(1){
+	write_LEDs_ASM(read_slider_switches_ASM());
+	if(read_slider_switches_ASM() & 0b1000000000){
+		HEX_clear_ASM(HEX0 | HEX1 | HEX2 | HEX3 | HEX4 | HEX5);		
+	}
+	else{
+		HEX_flood_ASM(HEX4 | HEX5);
+		char value = (read_slider_switches_ASM());
+		int pushbutton = (read_PB_data_ASM());
+		HEX_write_ASM(pushbutton, value);
+	}
 	
-	int count0 = 0, count1 = 0, count2 = 0, count3 = 0;
-	HPS_TIM_config_t hps_tim;
+}
+*/
+// PART 3
+	
+/*
+int count10ms = 0, count100ms = 0, count1s = 0, count10s = 0, count1min = 0, count10min = 0;
+	int run = 0;
+	HPS_TIM_config_t hps_tim_watch;
+	hps_tim_watch.tim = TIM0;
+	hps_tim_watch.timeout = 100000;
+	hps_tim_watch.LD_en = 1;	//M
+	hps_tim_watch.INT_en = 1;	//I
+	hps_tim_watch.enable = 1;	//E
+	HPS_TIM_config_ASM (&hps_tim_watch);
+	HPS_TIM_config_t hps_tim_poll;
+	hps_tim_poll.tim = TIM1;
+	hps_tim_poll.timeout = 5000;
+	hps_tim_poll.LD_en = 1;
+	hps_tim_poll.INT_en = 1;
+	hps_tim_poll.enable = 1;
+	HPS_TIM_config_ASM (&hps_tim_poll);
+	while(1){
+		if (run){
+			if(HPS_TIM_read_INT_ASM(TIM0)) {
+				HPS_TIM_clear_INT_ASM(TIM0);
+				if(++count10ms == 10){
+					count10ms = 0;
+					if(++count100ms == 10){
+						count100ms = 0;
+						if(++count1s == 10){
+							count1s = 0;
+							if(++count10s == 6){
+								count10s = 0;
+								if(++count1min == 10){
+									count1min = 0;
+									if(++count10min == 6){
+										count10min = 0;
+									}
+									HEX_write_ASM(HEX5, count10min);
+								}
+								HEX_write_ASM(HEX4, count1min);
+							}
+							HEX_write_ASM(HEX3, count10s);
+						}
+						HEX_write_ASM(HEX2, count1s);
+					}
+					HEX_write_ASM(HEX1, count100ms);
+				}
+				HEX_write_ASM(HEX0, count10ms);
+			}
+		}
+		if(HPS_TIM_read_INT_ASM(TIM1)) {
+			HPS_TIM_clear_INT_ASM(TIM1);
+			if(PB_edgecap_is_pressed_ASM(PB0)){		//PB0 = start
+				run = 1;
+				PB_clear_edgecap_ASM(PB0);
+			}
+			if(PB_edgecap_is_pressed_ASM(PB1)){		//PB1 = stop
+				run = 0;
+				PB_clear_edgecap_ASM(PB1);
+			}
+			if(PB_edgecap_is_pressed_ASM(PB2)){		//PB2 = reset
+				HPS_TIM_clear_INT_ASM(TIM0);
+				HEX_clear_ASM(HEX0|HEX1|HEX2|HEX3|HEX4|HEX5);
+				count10ms = 0, count100ms = 0, count1s = 0, count10s = 0, count1min = 0, count10min = 0;
+				PB_clear_edgecap_ASM(PB2);
+			}
+		}
+	} */
+// _____________________________________________________
+//	int count0 = 0, count1 = 0, count2 = 0, count3 = 0;
 
+/*	HPS_TIM_config_t hps_tim;
 	hps_tim.tim = TIM0|TIM1|TIM2|TIM3;
 	hps_tim.timeout = 1000000;
 	hps_tim.LD_en = 1;
 	hps_tim.INT_en = 1;
 	hps_tim.enable = 1;
-
 	HPS_TIM_config_ASM(&hps_tim);
-
-	while (1) {
-		write_LEDs_ASM(read_slider_switches_ASM());
-		if (HPS_TIM_read_INT_ASM(TIM0)) {
+	while(1){
+		if(HPS_TIM_read_INT_ASM(TIM0)){
 			HPS_TIM_clear_INT_ASM(TIM0);
 			if (++count0 == 16)
 				count0 = 0;
-		HEX_write_ASM(HEX0, (count0+48));
+			HEX_write_ASM(HEX0, count0);
 		}
-		if (HPS_TIM_read_INT_ASM(TIM1)) {
+		if(HPS_TIM_read_INT_ASM(TIM1)){
 			HPS_TIM_clear_INT_ASM(TIM1);
 			if (++count1 == 16)
 				count1 = 0;
-			HEX_write_ASM(HEX1, (count1+48));
+			HEX_write_ASM(HEX1, count1);
 		}
-		if (HPS_TIM_read_INT_ASM(TIM2)) {
+		if(HPS_TIM_read_INT_ASM(TIM2)){
 			HPS_TIM_clear_INT_ASM(TIM2);
 			if (++count2 == 16)
 				count2 = 0;
-		HEX_write_ASM(HEX2, (count2+48));
+			HEX_write_ASM(HEX2, count2);
 		}
-		if (HPS_TIM_read_INT_ASM(TIM3)) {
+		if(HPS_TIM_read_INT_ASM(TIM3)){
 			HPS_TIM_clear_INT_ASM(TIM3);
 			if (++count3 == 16)
 				count3 = 0;
-			HEX_write_ASM(HEX3, (count3+48));
+			HEX_write_ASM(HEX3, count3);
 		}
+}*/
 
-	}
-	*/
-/*
-	//Question 3 here****************************************************
-	
-	HPS_TIM_config_t hps_tim;
-	hps_tim.tim = TIM0;
-	hps_tim.timeout = 10000;
-	hps_tim.LD_en = 1;
-	hps_tim.INT_en = 1;
-	hps_tim.enable = 1;
 
-	HPS_TIM_config_ASM(&hps_tim); //Config timer 1
-
-	//This timer is for the pushbutton polling
-	HPS_TIM_config_t hps_tim_pb;
-	hps_tim_pb.tim = TIM1;
-	hps_tim_pb.timeout = 5000;
-	hps_tim_pb.LD_en = 1;
-	hps_tim_pb.INT_en = 1;
-	hps_tim_pb.enable = 1;
-
-	HPS_TIM_config_ASM(&hps_tim_pb); //config timer 2
-	//declare our init
-	int micros = 0;
-	int seconds = 0;
-	int minutes = 0;
-	int timerstart = 0;
-
-	while (1) {
-		//when timer for the timer seconds flags
-		if (HPS_TIM_read_INT_ASM(TIM0) && timerstart) {
-			HPS_TIM_clear_INT_ASM(TIM0);
-			micros += 10; //Timer is for 10 milliseconds
-
-			//When microseconds reach 1000, we increment seconds, then microsseocnds reset
-			if (micros >= 1000) {
-				micros -= 1000;
-				seconds++;
-				//when seconds reach 60, we reset and increment minutes
-				if (seconds >= 60) {
-					seconds -= 60;
-					minutes++;
-					//we dont have hours
-					if (minutes >= 60) {
-						minutes = 0;
-					}
-				}
-			}
-
-			//Display every value and convert the count to ascii values
-			HEX_write_ASM(HEX0, ((micros % 100) / 10) + 48);
-			HEX_write_ASM(HEX1, (micros / 100) + 48);
-			HEX_write_ASM(HEX2, (seconds % 10) + 48);
-			HEX_write_ASM(HEX3, (seconds / 10) + 48);
-			HEX_write_ASM(HEX4, (minutes % 10) + 48);
-			HEX_write_ASM(HEX5, (minutes / 10) + 48);
-		}
-		//for the pushbuttons polling
-		if (HPS_TIM_read_INT_ASM(TIM1)) {
-			HPS_TIM_clear_INT_ASM(TIM1);
-			int pushbutton = 0xF & read_PB_data_ASM();
-			//Start timer
-			if ((pushbutton & 1) && (!timerstart)) {
-				timerstart = 1;
-			}
-			//Stop timer
-			else if ((pushbutton & 2) && (timerstart)) {
-				timerstart = 0;
-			}
-			//Reset timer
-			else if (pushbutton & 4) {
-				micros = 0;
-				seconds = 0;
-				minutes = 0;
-				timerstart = 0;
-				//set everything to 0
-				HEX_write_ASM(HEX0, 48);
-				HEX_write_ASM(HEX1, 48);
-				HEX_write_ASM(HEX2, 48);
-				HEX_write_ASM(HEX3, 48);
-				HEX_write_ASM(HEX4, 48);
-				HEX_write_ASM(HEX5, 48);
-			}
-		}
-	}
-	*/
-	
-	//Example for interrupt count to 15 ************************************************************
-	//enable the pb interrupts
-	int_setup(2, (int[]) {73, 199 });
-	enable_PB_INT_ASM(PB0 | PB1 | PB2);
+// PART 4 
+	/*int_setup(1, (int[]){199});
 	
 	int count = 0;
 	HPS_TIM_config_t hps_tim;
-	//only need one timer
-	hps_tim.tim = TIM0;
-	hps_tim.timeout = 10000;
-	hps_tim.LD_en = 1;
-	hps_tim.INT_en = 1;
-	hps_tim.enable = 1;
-
-	HPS_TIM_config_ASM(&hps_tim);
-	int timerstart=0;
-	int micros = 0;
-	int seconds = 0;
-	int minutes = 0;
 	
-	while (1) {
-		//each 10 ms, we increment, we only go when the subroutine flag is active
-		if (hps_tim0_int_flag && timerstart) {
-			hps_tim0_int_flag = 0;
-			micros += 10; 
-
-			//increment ms until we reach 1000, then +1 second then reset
-			if (micros >= 1000) {
-				micros -= 1000;
-				seconds++;
-				//increment seconds, until we reach 60, then +1 minute then reset
-				if (seconds >= 60) {
-					seconds -= 60;
-					minutes++;
-					//reset minutes since we have no hours
-					if (minutes >= 60) {
-						minutes = 0;
-					}
-				}
-			}
-
-			//write on the proper hex display
-			HEX_write_ASM(HEX0, ((micros % 100) / 10) + 48);
-			HEX_write_ASM(HEX1, (micros / 100) + 48);
-			HEX_write_ASM(HEX2, (seconds % 10) + 48);
-			HEX_write_ASM(HEX3, (seconds / 10) + 48);
-			HEX_write_ASM(HEX4, (minutes % 10) + 48);
-			HEX_write_ASM(HEX5, (minutes / 10) + 48);
+	hps_tim.tim = TIM0;
+	hps_tim.timeout = 1000000;
+	hps_tim.LD_en = 1;
+	hps_tim.INT_en = 0;
+	hps_tim.enable = 1;
+	HPS_TIM_config_ASM(&hps_tim);
+	
+	while(1){
+	if (hps_tim0_int_flag){
+		hps_tim0_int_flag = 0;
+		if (++count == 15)
+			count = 0;
+		HEX_write_ASM(HEX0, count);
 		}
-		//if pushbutton flag active, the ISR is active, we do something according to which button pressed
+	}*/
+
+	int_setup(2, (int[]){73,199});
+
+	int count10ms = 0, count100ms = 0, count1s = 0, count10s = 0, count1min = 0, count10min = 0;
+	int run = 0;
+
+	HPS_TIM_config_t hps_tim_watch;
+	hps_tim_watch.tim = TIM0;
+	hps_tim_watch.timeout = 100000;
+	hps_tim_watch.LD_en = 1;	//M
+	hps_tim_watch.INT_en = 0;	//I
+	hps_tim_watch.enable = 1;	//E
+	HPS_TIM_config_ASM (&hps_tim_watch);
+
+	enable_PB_INT_ASM(PB0|PB1|PB2);
+//	run = 1;
+	while(1){
+		if (run){
+			if(hps_tim0_int_flag) {
+				hps_tim0_int_flag = 0;
+				if(++count10ms == 10){
+					count10ms = 0;
+					if(++count100ms == 10){
+						count100ms = 0;
+						if(++count1s == 10){
+							count1s = 0;
+							if(++count10s == 6){
+								count10s = 0;
+								if(++count1min == 10){
+									count1min = 0;
+									if(++count10min == 6){
+										count10min = 0;
+									}
+									HEX_write_ASM(HEX5, count10min);
+								}
+								HEX_write_ASM(HEX4, count1min);
+							}
+							HEX_write_ASM(HEX3, count10s);
+						}
+						HEX_write_ASM(HEX2, count1s);
+					}
+					HEX_write_ASM(HEX1, count100ms);
+				}
+				HEX_write_ASM(HEX0, count10ms);
+			}
+		}
+
 		if (pb_int_flag != 0){
-			if(pb_int_flag == 1)
-				timerstart=1;
-			else if(pb_int_flag == 2)
-				timerstart = 0;
-			else if(pb_int_flag == 4 & timerstart==0){
-				micros = 0;
-				seconds = 0;
-				minutes = 0;
-				HEX_write_ASM(HEX0, 48);
-				HEX_write_ASM(HEX1, 48);
-				HEX_write_ASM(HEX2, 48);
-				HEX_write_ASM(HEX3, 48);
-				HEX_write_ASM(HEX4, 48);
-				HEX_write_ASM(HEX5, 48);
+			if(pb_int_flag == 1){		//PB0 = start
+				run = 1;
+
+			}
+	
+			else if(pb_int_flag == 2){		//PB1 = stop
+				run = 0;
+
+			}
+	
+			else if(pb_int_flag == 4){		//PB2 = reset
+				//HPS_TIM_clear_INT_ASM(TIM0);
+				run = 0;
+				HEX_clear_ASM(HEX0|HEX1|HEX2|HEX3|HEX4|HEX5);
+				count10ms = 0, count100ms = 0, count1s = 0, count10s = 0, count1min = 0, count10min = 0;
+
 			}
 			pb_int_flag = 0;
 		}
 	}
-	
-	return 0;
+
+
+return 0;
 }
-
-

@@ -1,152 +1,123 @@
-	.text
-	.equ   HPS_TIM0_BASE, 0xFFC08000 //
-	.equ   HPS_TIM1_BASE, 0xFFC09000
-	.equ   HPS_TIM2_BASE, 0xFFD00000
-	.equ   HPS_TIM3_BASE, 0xFFD01000
-	
-	.global HPS_TIM_config_ASM
-	.global HPS_TIM_clear_INT_ASM
-	.global HPS_TIM_read_INT_ASM
+.text
+
+.equ HPS_TIM_1, 0xFFC08000 // 100 MHz
+.equ HPS_TIM_2, 0xFFC09000 // 100 MHz
+.equ HPS_TIM_3, 0xFFD00000 // 25 MHz
+.equ HPS_TIM_4, 0xFFD01000 // 25 MHz
+
+
+.global HPS_TIM_config_ASM
+.global HPS_TIM_read_INT_ASM
+.global HPS_TIM_clear_INT_ASM
+
+
 
 HPS_TIM_config_ASM:
-	PUSH {R4-R7, LR}
-	MOV R1, #0
-	MOV R2, #1
-	LDR R7, [R0]
-	B LOOP
+	LDR R1, [R0] // load timer one-hot from struct
 
-LOOP:
-	TST R7, R2, LSL R1
-	BEQ CONTINUE
-	BL CONFIG
+	TST R1, #1 // One hot encoding check for first timer
+	LDRNE R2, =HPS_TIM_1 // Address of timer
 
-CONTINUE:
-	ADD R1, R1, #1
-	CMP R1, #4
-	BLT LOOP
+	TST R1, #2 // One hot encoding check for second timer
+	LDRNE R2, =HPS_TIM_2 // Address of timer
 
-DONE:
-	POP {R4-R7, LR}
+	TST R1, #4 // One hot encoding check for third timer
+	LDRNE R2, =HPS_TIM_3 // Address of timer
+
+	TST R1, #8 // One hot encoding check for fourth timer
+	LDRNE R2, =HPS_TIM_4 // Address of timer
+
+	//LDR R1, [R0, #16] // load 'enable' from struct
+	//CMP R1, #1
+	//ANDNE R3, #0b11111111111111111111111111111110 // set bit to 0 (configuration mode)
+	MOV R3, #0
+	STR R3, [R2, #8] // Set enable bit E in Control register to 1 or 0
+
+	
+	LDR R1, [R0, #8] // load 'LD_en' from struct (Load Enable)
+	CMP R1, #1
+	ORREQ R3, #0b00000000000000000000000000000010 // set bit to 1
+	ANDNE R3, #0b11111111111111111111111111111101 // set bit to 0
+	STR R3, [R2, #8] // Set M bit in Control register to 1 or 0
+	LDREQ R1, [R0, #4] // get the 'timeout' int from struct (microseconds)
+	MOV R10, #10
+	MUL R1, R1, R10
+	STR R1, [R2] // Set the load value in the load register to 'timeout'
+
+	LDR R1, [R0, #12] // load 'INT_en' from struct
+	CMP R1, #1
+	ORREQ R3, #0b00000000000000000000000000000100 // set bit to 1
+	ANDNE R3, #0b11111111111111111111111111111011 // set bit to 0
+	STR R3, [R2, #8] // Set I bit in Control register to 1 or 0
+
+	LDR R1, [R0, #16] // load 'enable' from struct
+	CMP R1, #1
+	LDR R3, [R2, #8]
+	ORREQ R3, #0b00000000000000000000000000000001 // set bit to 1 (non configuration mode/start timer)
+	STR R3, [R2, #8]
+	
 	BX LR
+HPS_TIM_read_INT_ASM:
+		
 
 
-CONFIG:
-	PUSH {LR}
-	
-	LDR R3, =HPS_TIM_BASE
-	LDR R4, [R3, R1, LSL #2]
-	
-	BL DISABLE
-	BL SET_LOAD_VAL
-	BL SET_LOAD_BIT
-	BL SET_INT_BIT
-	BL SET_EN_BIT
-	
-	POP {LR}
-	BX LR 
+		TST R0, #8 
+		LDRNE R1, =HPS_TIM_4
+		LDRNE R3, [R1, #8]
+		ANDNE R3, R3, #0b11111111111111111111111111111011 // set bit to 0
+		STRNE R3, [R1, #8] // Set I bit in Control register to 1 or 0
+		LDRNE R2, [R1, #16]
+		
 
-DISABLE:
-	LDR R5, [R4, #0x8]
-	AND R5, R5, #0xFFFFFFFE
-	STR R5, [R4, #0x8]
-	BX LR
-	
-SET_LOAD_VAL:
-	LDR R5, [R0, #0x4]
-	MOV R6, #25
-	MUL R5, R5, R6
-	CMP R1, #2
-	LSLLT R5, R5, #2
-	STR R5, [R4]
-	BX LR
-	
-SET_LOAD_BIT:
-	LDR R5, [R4, #0x8]
-	LDR R6, [R0, #0x8]
-	AND R5, R5, #0xFFFFFFFD
-	ORR R5, R5, R6, LSL #1
-	STR R5, [R4, #0x8]
-	BX LR
-	
-SET_INT_BIT:
-	LDR R5, [R4, #0x8]
-	LDR R6, [R0, #0xC]
-	EOR R6, R6, #0x00000001
-	AND R5, R5, #0xFFFFFFFB
-	ORR R5, R5, R6, LSL #2
-	STR R5, [R4, #0x8]
-	BX LR
-	
-SET_EN_BIT:
-	LDR R5, [R4, #0x8]
-	LDR R6, [R0, #0x10]
-	AND R5, R5, #0xFFFFFFFE
-	ORR R5, R5, R6
-	STR R5, [R4, #0x8]
-	BX LR
+		TST R0, #4 
+		LDRNE R1, =HPS_TIM_3
+		LDRNE R3, [R1, #8]
+		ANDNE R3, R3, #0b11111111111111111111111111111011 // set bit to 0
+		STRNE R3, [R1, #8] // Set I bit in Control register to 1 or 0
+		LDRNE R2, [R1, #16]
+		
+
+		TST R0, #2 
+		LDRNE R1, =HPS_TIM_2
+		LDRNE R3, [R1, #8]
+		ANDNE R3, R3, #0b11111111111111111111111111111011 // set bit to 0
+		STRNE R3, [R1, #8] // Set I bit in Control register to 1 or 0
+		LDRNE R2, [R1, #16]
+		
+
+		TST R0, #1 
+		LDRNE R1, =HPS_TIM_1
+		LDRNE R3, [R1, #8]
+		ANDNE R3, R3, #0b11111111111111111111111111111011 // set bit to 0
+		STRNE R3, [R1, #8] // Set I bit in Control register to 1 or 0
+		LDRNE R2, [R1, #16]
+
+		AND R3, R2, #0x1 // Will move the S-bit of the last-checked timer into R3
+		MOV R4, #0
+		EOR R0, R4, R3
+		
+		
+		BX LR
 
 HPS_TIM_clear_INT_ASM:
-	PUSH {LR}
-	MOV R1, #0
-	MOV R2, #1
-	B CLEAR_INT_LOOP
-
-CLEAR_INT_LOOP:
-	TST R0, R2, LSL R1
-	BEQ CLEAR_INT_CONTINUE
-	BL CLEAR_INT
-
-CLEAR_INT_CONTINUE:
-	ADD R1, R1, #1
-	CMP R1, #4
-	BLT CLEAR_INT_LOOP
-	B CLEAR_INT_DONE
-
-CLEAR_INT_DONE:
-	POP {LR}
-	BX LR
-
-CLEAR_INT:
-	LDR R3, =HPS_TIM_BASE
-	LDR R3, [R3, R1, LSL #2]
-	LDR R3, [R3, #0xC]
-	BX LR
-
-HPS_TIM_read_INT_ASM:
-	PUSH {LR}
-	PUSH {R4}
-	MOV R1, #0
-	MOV R2, #1
-	MOV R4, #0
-	B READ_INT_LOOP
-
-READ_INT_LOOP:
-	TST R0, R2, LSL R1
-	BEQ READ_INT_CONTINUE
-	BL READ_INT
-
-READ_INT_CONTINUE:
-	ADD R1, R1, #1
-	CMP R1, #4
-	BEQ READ_INT_DONE
-	LSL R4, R4, #1
-	B READ_INT_LOOP
 	
-READ_INT_DONE:
-	MOV R0, R4
-	POP {R4}
-	POP {LR}
-	BX LR
-
-READ_INT:
-	LDR R3, =HPS_TIM_BASE
-	LDR R3, [R3, R1, LSL #2]
-	LDR R3, [R3, #0x10]
-	AND R3, R3, #0x1
-	EOR R4, R4, R3
-	BX LR
+	TST R0, #8
+	LDRNE R1, =HPS_TIM_4
+	LDRNE R2, [R1, #12]
 	
-HPS_TIM_BASE:
-	.word 0xFFC08000, 0xFFC09000, 0xFFD00000, 0xFFD01000
 
-	.end
+	TST R0, #4
+	LDRNE R1, =HPS_TIM_3
+	LDRNE R2, [R1, #12]
+	
+
+	TST R0, #2
+	LDRNE R1, =HPS_TIM_2
+	LDRNE R2, [R1, #12]	
+
+	TST R0, #1
+	LDRNE R1, =HPS_TIM_1
+	LDRNE R2, [R1, #12]
+
+	BX LR
+.end
