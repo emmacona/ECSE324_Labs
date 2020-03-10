@@ -6,26 +6,26 @@
 		.global HEX_write_ASM //external
 
 HEX_clear_ASM:					//Given input, RO holds one-hot encoded corresponding to HEXdisplay 
-		PUSH {R1-R8,LR}			
-		LDR R1, =Hex_3_To_0		//put location of the HEX3-0 register into R0
-		MOV R3, #0				//this is our counter for which hex counts
+		PUSH {R1-R8,LR}			// By convention, push all used registers and the LR
+		LDR R1, =Hex_3_To_0		//put location of the HEX3-0 register into R1
+		MOV R3, #0			//R3 will serve as our counter to see which hex it counts 
 		
 HEX_clear_LOOP:
-		CMP R3, #6				//compares counter to see if all have been looped through
-		BEQ HEX_clear_CORRECT	//branch to done if error
+		CMP R3, #6			//Check to see if counter has looped through all hex displays, there are a total of six
+		BEQ HEX_clear_CORRECT		//If all have been looped through branch
 
-		AND R4, R0, #1			//AND 0x0000 0000 is equal to 0x0000 00001, shift if not equal
-		CMP R4, #1				//if equal, this is the desired HEX
-		BEQ HEX_clear_CORRECT	//branch to the part that does something
+		AND R4, R0, #1			//AND 0x0000 0000 is equal to 0x0000 00001, shift if not equal --> Checks if the one hot encoded bit is the first bit 
+		CMP R4, #1			//if equal, this is the desired HEX
+		BEQ HEX_clear_CORRECT		//if the result of the AND is #1 branch 
 							
 		ASR R0, R0, #1			//if not equal, then shift by 1 bit
 		ADD R3, R3, #1			//also increment our counter which will tell us which one is our HEX
 		B HEX_clear_LOOP		//loop again if not correct
 		
 HEX_clear_CORRECT:
-		CMP R3, #3				//if counter is bigger than 3, we are at HEX 4 or 5
+		CMP R3, #3		       	//if counter is bigger than 3, we are at HEX 4 or 5
 		SUBGT R3, R3, #4		//we set our counter back to either 0 or 1 since we are updating the bits
-		LDRGT R1, =Hex_5_To_4	//we set it to the the other disp HEX
+		LDRGT R1, =Hex_5_To_4	       	//we set it to the the other disp HEX
 		LDR R2, [R1]
 		MOV R5, #0xFFFFFF00		//give it an initial value
 		B HEX_clear_LOOP2		//to push stuff back
