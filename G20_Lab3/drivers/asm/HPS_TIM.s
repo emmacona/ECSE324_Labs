@@ -27,30 +27,34 @@ HPS_TIM_config_ASM:
 	TST R1, #8 // One hot encoding check for fourth timer
 	LDRNE R2, =HPS_TIM_4 // If not, set the address to timer 4
 
-	MOV R3, #0
-	STR R3, [R2, #8] // Set enable bit E in Control register to 1 or 0
-
+	MOV R3, #0 // R3 = enable register
+	STR R3, [R2, #8] // Set the enable to timer value
 	
-	LDR R1, [R0, #8] // load 'LD_en' from struct (Load Enable)
-	CMP R1, #1
-	ORREQ R3, #0b00000000000000000000000000000010 // set bit to 1
-	ANDNE R3, #0b11111111111111111111111111111101 // set bit to 0
-	STR R3, [R2, #8] // Set M bit in Control register to 1 or 0
-	LDREQ R1, [R0, #4] // get the 'timeout' int from struct (microseconds)
+	// config timeout
+	LDREQ R1, [R0, #4] // Load the timout field from timer struct
+	CMP R1, #1 // if enable is one
 	MOV R10, #10
 	MUL R1, R1, R10
-	STR R1, [R2] // Set the load value in the load register to 'timeout'
+	STR R1, [R2]
 
-	LDR R1, [R0, #12] // load 'INT_en' from struct
+	// config LD_en
+	LDR R1, [R0, #8] // Load the LD_en from the timer struct
+	ORREQ R3, #0b00000000000000000000000000000010 // if it is one, set the enable register to 1
+	ANDNE R3, #0b11111111111111111111111111111101 // else set the enable register to 0
+	STR R3, [R2, #8]
+
+	// config INT_en
+	LDR R1, [R0, #12] // Load the INT_en field from timer struct
 	CMP R1, #1
-	ORREQ R3, #0b00000000000000000000000000000100 // set bit to 1
-	ANDNE R3, #0b11111111111111111111111111111011 // set bit to 0
-	STR R3, [R2, #8] // Set I bit in Control register to 1 or 0
+	ORREQ R3, #0b00000000000000000000000000000100 // if it is one, set the enable register to 1
+	ANDNE R3, #0b11111111111111111111111111111011 // else set the enable register to 0
+	STR R3, [R2, #8] 
 
-	LDR R1, [R0, #16] // load 'enable' from struct
+	// config enable from struct
+	LDR R1, [R0, #16] // Load the enable field from timer struct
 	CMP R1, #1
 	LDR R3, [R2, #8]
-	ORREQ R3, #0b00000000000000000000000000000001 // set bit to 1 (non configuration mode/start timer)
+	ORREQ R3, #0b00000000000000000000000000000001 // if it is one, set the enable register to 1
 	STR R3, [R2, #8]
 	
 	BX LR
@@ -66,7 +70,6 @@ HPS_TIM_read_INT_ASM:
 		ANDNE R3, R3, #0b11111111111111111111111111111011 // set bit to 0
 		STRNE R3, [R1, #8] // Set I bit in Control register to 1 or 0
 		LDRNE R2, [R1, #16]
-		
 
 		TST R0, #4 
 		LDRNE R1, =HPS_TIM_3
@@ -74,7 +77,6 @@ HPS_TIM_read_INT_ASM:
 		ANDNE R3, R3, #0b11111111111111111111111111111011 // set bit to 0
 		STRNE R3, [R1, #8] // Set I bit in Control register to 1 or 0
 		LDRNE R2, [R1, #16]
-		
 
 		TST R0, #2 
 		LDRNE R1, =HPS_TIM_2
@@ -83,7 +85,6 @@ HPS_TIM_read_INT_ASM:
 		STRNE R3, [R1, #8] // Set I bit in Control register to 1 or 0
 		LDRNE R2, [R1, #16]
 		
-
 		TST R0, #1 
 		LDRNE R1, =HPS_TIM_1
 		LDRNE R3, [R1, #8]
@@ -94,8 +95,7 @@ HPS_TIM_read_INT_ASM:
 		AND R3, R2, #0x1 // Will move the S-bit of the last-checked timer into R3
 		MOV R4, #0
 		EOR R0, R4, R3
-		
-		
+
 		BX LR
 
 //////////////////////
@@ -107,12 +107,10 @@ HPS_TIM_clear_INT_ASM:
 	TST R0, #8
 	LDRNE R1, =HPS_TIM_4
 	LDRNE R2, [R1, #12]
-	
 
 	TST R0, #4
 	LDRNE R1, =HPS_TIM_3
 	LDRNE R2, [R1, #12]
-	
 
 	TST R0, #2
 	LDRNE R1, =HPS_TIM_2
