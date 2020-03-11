@@ -67,7 +67,7 @@ HPS_TIM_read_INT_ASM:
 		// READ DISPLAY 1
 		TST R0, #1 
 		LDRNE R1, =HPS_TIM_1
-		LDRNE R3, [R1, #8]
+		LDRNE R3, [R1, #8] // R3 is the control register
 		ANDNE R3, R3, #0b11111111111111111111111111111011 // We set 8 to 0
 		STRNE R3, [R1, #8] // Set I bit in Control register to 1 or 0
 		LDRNE R2, [R1, #16]
@@ -76,29 +76,30 @@ HPS_TIM_read_INT_ASM:
 		TST R0, #2 
 		LDRNE R1, =HPS_TIM_2
 		LDRNE R3, [R1, #8]
-		ANDNE R3, R3, #0b11111111111111111111111111111011 // set bit to 0
-		STRNE R3, [R1, #8] // Set I bit in Control register to 1 or 0
+		ANDNE R3, R3, #0b11111111111111111111111111111011 // We set 8 to 0
+		STRNE R3, [R1, #8] // Update control register
 		LDRNE R2, [R1, #16]
 
 		// READ DISPLAY 3
 		TST R0, #4 
 		LDRNE R1, =HPS_TIM_3
 		LDRNE R3, [R1, #8]
-		ANDNE R3, R3, #0b11111111111111111111111111111011 // set bit to 0
-		STRNE R3, [R1, #8] // Set I bit in Control register to 1 or 0
+		ANDNE R3, R3, #0b11111111111111111111111111111011 // We set 8 to 0
+		STRNE R3, [R1, #8] // Update control register
 		LDRNE R2, [R1, #16]
 
 		// READ DISPLAY 4
 		TST R0, #8 // var passed through R0
 		LDRNE R1, =HPS_TIM_4
 		LDRNE R3, [R1, #8]
-		ANDNE R3, R3, #0b11111111111111111111111111111011 // set bit to 0
-		STRNE R3, [R1, #8] // Set I bit in Control register to 1 or 0
+		ANDNE R3, R3, #0b11111111111111111111111111111011 // We set 8 to 0
+		STRNE R3, [R1, #8] // Update control register
 		LDRNE R2, [R1, #16]
 
-		AND R3, R2, #0x1 // Will move the S-bit of the last-checked timer into R3
+		// Return value
+		AND R3, R2, #0x1
 		MOV R4, #0
-		EOR R0, R4, R3
+		EOR R0, R4, R3 // return R0
 
 		BX LR
 
@@ -107,22 +108,26 @@ HPS_TIM_read_INT_ASM:
 //////////////////////
 
 HPS_TIM_clear_INT_ASM:
-	
-	TST R0, #8
-	LDRNE R1, =HPS_TIM_4
-	LDRNE R2, [R1, #12]
-
-	TST R0, #4
-	LDRNE R1, =HPS_TIM_3
-	LDRNE R2, [R1, #12]
-
-	TST R0, #2
-	LDRNE R1, =HPS_TIM_2
-	LDRNE R2, [R1, #12]	
-
+	// Clear tim 1
 	TST R0, #1
 	LDRNE R1, =HPS_TIM_1
 	LDRNE R2, [R1, #12]
 
+	// Clear tim 2
+	TST R0, #2
+	LDRNE R1, =HPS_TIM_2
+	LDRNE R2, [R1, #12]	
+
+	// Clear tim 3
+	TST R0, #4
+	LDRNE R1, =HPS_TIM_3
+	LDRNE R2, [R1, #12]
+
+	// Clear tim 4
+	TST R0, #8
+	LDRNE R1, =HPS_TIM_4
+	LDRNE R2, [R1, #12]
+
 	BX LR
+	
 .end
