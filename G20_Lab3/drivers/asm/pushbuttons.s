@@ -12,7 +12,9 @@
 .global enable_PB_INT_ASM
 .global disable_PB_INT_ASM
 
-// PUSH BUTTON SUBROUTINES
+///////////////////////////////
+// PUSH BUTTON SUBROUTINES ////
+///////////////////////////////
 
 read_PB_data_ASM:
 	LDR R1, =KEY_3_TO_0
@@ -27,13 +29,15 @@ PB_data_ispressed_ASM:
 	MOVEQ R0, #1
 	MOVNE R0, #0
 	BX LR
-	
-// EDGECAP SUBROUTINES
+
+///////////////////////////	
+// EDGECAP SUBROUTINES ////
+///////////////////////////
 
 read_PB_edgecap_ASM:
 	LDR R1, =EDGECAPTURE
 	LDR R0, [R1]
-	AND R0, R0, #0xF
+	AND R0, R0, #0xFFFFFFFF
 	BXEQ LR	
 
 
@@ -52,12 +56,13 @@ PB_clear_edgecap_ASM:
 	STR R2, [R1] // Performing a write operation sets all bits in register to 0
 	BX LR
 
-
-// ENABLE AND DISABLE PUSHBUTTON SUBROUTINES
+////////////////////////////////////////////////
+// ENABLE AND DISABLE PUSHBUTTON SUBROUTINES ///
+////////////////////////////////////////////////
 
 enable_PB_INT_ASM:
 	LDR R1, =INTERRUPT
-	AND R2, R0, #0xF // Set IR bit of PB input to 1
+	AND R2, R0, #0xFFFFFFFF // Set IR bit of PB input to 1
 	STR R2, [R1]
 	BX LR
 

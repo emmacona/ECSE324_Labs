@@ -11,25 +11,22 @@
 .global HPS_TIM_clear_INT_ASM
 
 
+///////////////////////
+// CONFIG SUBROUTINE //
+///////////////////////
 
 HPS_TIM_config_ASM:
-	LDR R1, [R0] // load timer one-hot from struct
-
-	TST R1, #1 // One hot encoding check for first timer
-	LDRNE R2, =HPS_TIM_1 // Address of timer
-
-	TST R1, #2 // One hot encoding check for second timer
-	LDRNE R2, =HPS_TIM_2 // Address of timer
-
-	TST R1, #4 // One hot encoding check for third timer
-	LDRNE R2, =HPS_TIM_3 // Address of timer
-
+	LDR R1, [R0] // Timer passed through R0
+	// check timers locations
+	TST R1, #1 // Check if timer 1 is started
+	LDRNE R2, =HPS_TIM_1 // If not, set the address to timer 1
+	TST R1, #2 // Check for second timer
+	LDRNE R2, =HPS_TIM_2 // If not, set the address to timer 2
+	TST R1, #4 // Check for third timer
+	LDRNE R2, =HPS_TIM_3 // If not, set the address to timer 3
 	TST R1, #8 // One hot encoding check for fourth timer
-	LDRNE R2, =HPS_TIM_4 // Address of timer
+	LDRNE R2, =HPS_TIM_4 // If not, set the address to timer 4
 
-	//LDR R1, [R0, #16] // load 'enable' from struct
-	//CMP R1, #1
-	//ANDNE R3, #0b11111111111111111111111111111110 // set bit to 0 (configuration mode)
 	MOV R3, #0
 	STR R3, [R2, #8] // Set enable bit E in Control register to 1 or 0
 
@@ -57,10 +54,12 @@ HPS_TIM_config_ASM:
 	STR R3, [R2, #8]
 	
 	BX LR
+
+/////////////////////
+// READ SUBROUTINE //
+/////////////////////
+
 HPS_TIM_read_INT_ASM:
-		
-
-
 		TST R0, #8 
 		LDRNE R1, =HPS_TIM_4
 		LDRNE R3, [R1, #8]
@@ -98,6 +97,10 @@ HPS_TIM_read_INT_ASM:
 		
 		
 		BX LR
+
+//////////////////////
+// CLEAR SUBROUTINE //
+//////////////////////
 
 HPS_TIM_clear_INT_ASM:
 	
