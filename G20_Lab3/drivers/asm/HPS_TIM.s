@@ -64,13 +64,23 @@ HPS_TIM_config_ASM:
 /////////////////////
 
 HPS_TIM_read_INT_ASM:
-		TST R0, #8 
-		LDRNE R1, =HPS_TIM_4
+		// READ DISPLAY 1
+		TST R0, #1 
+		LDRNE R1, =HPS_TIM_1
+		LDRNE R3, [R1, #8]
+		ANDNE R3, R3, #0b11111111111111111111111111111011 // We set 8 to 0
+		STRNE R3, [R1, #8] // Set I bit in Control register to 1 or 0
+		LDRNE R2, [R1, #16]
+
+		// READ DISPLAY 2
+		TST R0, #2 
+		LDRNE R1, =HPS_TIM_2
 		LDRNE R3, [R1, #8]
 		ANDNE R3, R3, #0b11111111111111111111111111111011 // set bit to 0
 		STRNE R3, [R1, #8] // Set I bit in Control register to 1 or 0
 		LDRNE R2, [R1, #16]
 
+		// READ DISPLAY 3
 		TST R0, #4 
 		LDRNE R1, =HPS_TIM_3
 		LDRNE R3, [R1, #8]
@@ -78,15 +88,9 @@ HPS_TIM_read_INT_ASM:
 		STRNE R3, [R1, #8] // Set I bit in Control register to 1 or 0
 		LDRNE R2, [R1, #16]
 
-		TST R0, #2 
-		LDRNE R1, =HPS_TIM_2
-		LDRNE R3, [R1, #8]
-		ANDNE R3, R3, #0b11111111111111111111111111111011 // set bit to 0
-		STRNE R3, [R1, #8] // Set I bit in Control register to 1 or 0
-		LDRNE R2, [R1, #16]
-		
-		TST R0, #1 
-		LDRNE R1, =HPS_TIM_1
+		// READ DISPLAY 4
+		TST R0, #8 // var passed through R0
+		LDRNE R1, =HPS_TIM_4
 		LDRNE R3, [R1, #8]
 		ANDNE R3, R3, #0b11111111111111111111111111111011 // set bit to 0
 		STRNE R3, [R1, #8] // Set I bit in Control register to 1 or 0
