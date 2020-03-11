@@ -183,7 +183,10 @@ int main() {
 	}
 	*/
 	
-	//Example for interrupt count to 15 ************************************************************
+	////////////////////
+	/// INTERRUPTS /////
+	////////////////////
+	
 	//enable the pb interrupts
 	int_setup(2, (int[]) {73, 199 });
 	enable_PB_INT_ASM(PB0 | PB1 | PB2);
