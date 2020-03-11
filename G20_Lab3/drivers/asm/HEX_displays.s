@@ -27,13 +27,13 @@
 
 
 HEX_clear_ASM: 
-	LDR R1, =HEX3_TO_0
-	MOV R2, #0
-	LDR R3, =HEX5_TO_4
+	LDR R1, =HEX3_TO_0 	//Loads pointer to location of HEX3-0
+	MOV R2, #0        	//
+	LDR R3, =HEX5_TO_4	//loads pointer to location of HEX4-5
 	MOV R4, #0
-	TST R0, #8
+	TST R0, #8		//Performs bitwise AND with 8 and value in R0
 
-	ADDEQ R2, R2, #SHOW_FULL
+	ADDEQ R2, R2, #SHOW_FULL //
 	LSL R2, R2, #8
 	TST R0, #4
 	ADDEQ R2, R2, #SHOW_FULL
