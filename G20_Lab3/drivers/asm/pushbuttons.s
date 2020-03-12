@@ -35,15 +35,9 @@ PB_data_ispressed_ASM:
 ///////////////////////////
 
 read_PB_edgecap_ASM:
-<<<<<<< HEAD
-	LDR R1, =EDGECAPTURE
-	LDR R0, [R1]
-	AND R0, R0, #0xFFFFFFFF //Bitwise AND to see 
-=======
 	LDR R1, =EDGECAPTURE // Load pointer to address of edgecap
 	LDR R0, [R1] // Load content of edgecap
 	AND R0, R0, #0xFFFFFFFF 
->>>>>>> 9203b6faf6ee087b989e79f19a31777195fcaa3b
 	BXEQ LR	
 
 
