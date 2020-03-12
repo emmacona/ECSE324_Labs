@@ -17,17 +17,17 @@
 ///////////////////////////////
 
 read_PB_data_ASM:
-	LDR R1, =KEY_3_TO_0
-	LDR R0, [R1]
+	LDR R1, =KEY_3_TO_0 // Load pointer to address of keys 3 to 0
+	LDR R0, [R1] // Load content of keys 3 to 0
 	BX LR
 
-PB_data_ispressed_ASM:
-	LDR R1, =KEY_3_TO_0
-	LDR R2, [R1]
-	AND R2, R2, R0
-	CMP R2, R0
-	MOVEQ R0, #1
-	MOVNE R0, #0
+PB_data_ispressed_ASM: 
+	LDR R1, =KEY_3_TO_0 // Load pointer to address of keys 3 to 0
+	LDR R2, [R1] // Load content of keys 3 to 0
+	AND R2, R2, R0 
+	CMP R2, R0 // Compare to PB value that is passed 
+	MOVEQ R0, #1 // if the same, set boolean to true (i.e. return 1)
+	MOVNE R0, #0 // else, set boolean to false (i.e. return 0)
 	BX LR
 
 ///////////////////////////	
@@ -35,25 +35,25 @@ PB_data_ispressed_ASM:
 ///////////////////////////
 
 read_PB_edgecap_ASM:
-	LDR R1, =EDGECAPTURE
-	LDR R0, [R1]
-	AND R0, R0, #0xFFFFFFFF
+	LDR R1, =EDGECAPTURE // Load pointer to address of edgecap
+	LDR R0, [R1] // Load content of edgecap
+	AND R0, R0, #0xFFFFFFFF 
 	BXEQ LR	
 
 
 PB_edgecap_is_pressed_ASM:	
-	LDR R1, =EDGECAPTURE
-	LDR R2, [R1]
+	LDR R1, =EDGECAPTURE // Load pointer to address of edgecap
+	LDR R2, [R1] // Load content of edgecap
 	AND R2, R2, R0
-	CMP R2, R0
-	MOVEQ R0, #1
-	MOVNE R0, #0
+	CMP R2, R0  // Compare to edgecap value that is passed 
+	MOVEQ R0, #1 // if the same, set boolean to true (i.e. return 1)
+	MOVNE R0, #0 // else, set boolean to false (i.e. return 0)
 	BX LR
 
 PB_clear_edgecap_ASM:
-	LDR R1, =EDGECAPTURE
-	MOV R2, R0
-	STR R2, [R1] // Performing a write operation sets all bits in register to 0
+	LDR R1, =EDGECAPTURE // Load pointer to address of edgecap
+	MOV R2, R0 
+	STR R2, [R1] // Set all to zero
 	BX LR
 
 ////////////////////////////////////////////////
@@ -61,16 +61,16 @@ PB_clear_edgecap_ASM:
 ////////////////////////////////////////////////
 
 enable_PB_INT_ASM:
-	LDR R1, =INTERRUPT
-	AND R2, R0, #0xFFFFFFFF // Set IR bit of PB input to 1
-	STR R2, [R1]
+	LDR R1, =INTERRUPT // Load pointer to address of INTERRUPT
+	AND R2, R0, #0xFFFFFFFF // set to 1 (i.e. enable)
+	STR R2, [R1] // Write 
 	BX LR
 
 disable_PB_INT_ASM:
-	LDR R1, =INTERRUPT
+	LDR R1, =INTERRUPT // Load pointer to address of INTERRUPT
 	LDR R2, [R1] 
-	BIC R2, R2, R0 // Set IR bit of PB input to 0
-	STR R2, [R1] // Write to IR
+	BIC R2, R2, R0 // set to 0 (i.e. disable)
+	STR R2, [R1] // Write
 	BX LR
 
 
