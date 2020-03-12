@@ -37,7 +37,7 @@ PB_data_ispressed_ASM:
 read_PB_edgecap_ASM:
 	LDR R1, =EDGECAPTURE
 	LDR R0, [R1]
-	AND R0, R0, #0xFFFFFFFF
+	AND R0, R0, #0xFFFFFFFF //Bitwise AND to see 
 	BXEQ LR	
 
 

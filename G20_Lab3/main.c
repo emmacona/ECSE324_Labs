@@ -188,7 +188,12 @@ int main() {
 	////////////////////
 	
 	//enable the pb interrupts
-	int_setup(2, (int[]) {73, 199 });
+	// this configures the interupt controller and enables desired interupt ID's
+	//2 interupts to enable (timer and PB) and the int array containing the IDS
+	int_setup(2, (int[]) {73, 199 }); 
+	
+
+
 	enable_PB_INT_ASM(PB0 | PB1 | PB2);
 	
 	int count = 0;

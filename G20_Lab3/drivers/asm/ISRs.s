@@ -20,34 +20,34 @@
 	.global hps_tim0_int_flag
 	.global pb_int_flag
 
-hps_tim0_int_flag:
+
+
+hps_tim0_int_flag: // set timer flag to 0
 	.word 0x0
 
-
-pb_int_flag:
+pb_int_flag: //set pb flag to 0
 	.word 0x0
 
-PB_KEY0_int_flag:
+PB_KEY0_int_flag: //set pb0 flag to 0
 	.word 0x0
 
-PB_KEY1_int_flag:
+PB_KEY1_int_flag: //set pb1 flag to 0
 	.word 0x0
 
-PB_KEY2_int_flag:
+PB_KEY2_int_flag: //set pb2 flag to 0 
 	.word 0x0
 
-PB_KEY3_int_flag:
+PB_KEY3_int_flag: //set pb3 flag to 0
 	.word 0x0
 
-A9_PRIV_TIM_ISR:
+A9_PRIV_TIM_ISR: //Convention
 	BX LR
 	
-HPS_GPIO1_ISR:
+HPS_GPIO1_ISR: //Convention
 	BX LR
 	
 HPS_TIM0_ISR:		//clear interrupt status and assert interrupt flag
-	PUSH {LR}
-	
+	PUSH {LR}		//Push LR to the stack
 	MOV R0, #0x1
 	BL HPS_TIM_clear_INT_ASM	//clears the edgecap register and also clears all associated interrupts
 
@@ -58,48 +58,48 @@ HPS_TIM0_ISR:		//clear interrupt status and assert interrupt flag
 	POP {LR}
 	BX LR
 	
-HPS_TIM1_ISR:
+HPS_TIM1_ISR: //Convention
 	BX LR
 	
-HPS_TIM2_ISR:
+HPS_TIM2_ISR: //Convention
 	BX LR
 	
-HPS_TIM3_ISR:
+HPS_TIM3_ISR: //Convention
 	BX LR
 	
-FPGA_INTERVAL_TIM_ISR:
+FPGA_INTERVAL_TIM_ISR: //Convention
 	BX LR
 	
 FPGA_PB_KEYS_ISR:
 	PUSH {LR}
-	BL read_PB_edgecap_ASM
+	BL read_PB_edgecap_ASM //Get the specific pushbutton that was pressed it is in R0
 	
-	LDR R1, =pb_int_flag
-	STR R0, [R1]
-	BL PB_clear_edgecap_ASM
+	LDR R1, =pb_int_flag  //get the pb flag 
+	STR R0, [R1]         //Set the flag to the value of the pb 
+	BL PB_clear_edgecap_ASM //clear the edgecap register to reset the interupt 
 	
-	POP {LR}
+	POP {LR}         //pop the LR from the stack
 	BX LR
 	
-FPGA_Audio_ISR:
+FPGA_Audio_ISR: //Convention
 	BX LR
 	
-FPGA_PS2_ISR:
+FPGA_PS2_ISR: //Convention
 	BX LR
 	
-FPGA_JTAG_ISR:
+FPGA_JTAG_ISR: //Convention
 	BX LR
 	
-FPGA_IrDA_ISR:
+FPGA_IrDA_ISR: //Convention
 	BX LR
 	
-FPGA_JP1_ISR:
+FPGA_JP1_ISR: //Convention
 	BX LR
 	
-FPGA_JP2_ISR:
+FPGA_JP2_ISR: //Convention
 	BX LR
 	
-FPGA_PS2_DUAL_ISR:
+FPGA_PS2_DUAL_ISR: //Convention
 	BX LR
 	
 	.end
